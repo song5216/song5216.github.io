@@ -10,8 +10,9 @@ taxonomies:
   tag: "tags"
 
 # 分页配置
-paginate: 10
-paginatePath: "page"
+pagination:
+  pagerSize: 10
+  path: "page"
 
 # 启用 robots.txt 和 sitemap
 enableRobotsTXT: true
