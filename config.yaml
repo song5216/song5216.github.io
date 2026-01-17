@@ -1,0 +1,144 @@
+baseURL: "https://song5216.github.io/"
+languageCode: "zh-CN"
+title: "Song5216 的个人博客"
+theme: "PaperMod"
+defaultContentLanguage: "zh"
+
+# 分类和标签配置
+taxonomies:
+  category: "categories"
+  tag: "tags"
+
+# 分页配置
+paginate: 10
+paginatePath: "page"
+
+# 启用 robots.txt 和 sitemap
+enableRobotsTXT: true
+
+# 输出格式（包含 JSON 用于搜索）
+outputs:
+  home:
+    - HTML
+    - JSON
+    - RSS
+
+# PaperMod 主题参数
+params:
+  env: production
+  title: "Song5216 的个人博客"
+  description: "个人博客网站"
+  author: "Song5216"
+  
+  # 主页配置
+  homeInfoParams:
+    Title: "欢迎来到我的博客"
+    Content: "这里记录我的学习、思考和分享"
+  
+  # 社交链接（可选）
+  socialIcons:
+    - name: github
+      url: "https://github.com/song5216"
+  
+  # 功能开关
+  ShowReadingTime: true
+  ShowPostNavLinks: true
+  ShowBreadCrumbs: true
+  ShowCodeCopyButtons: true
+  ShowWordCount: true
+  ShowRssButtonInSectionTermList: true
+  UseHugoToc: true
+  disableSpecial1stPost: false
+  disableScrollToTop: false
+  hidemeta: false
+  hideSummary: false
+  showtoc: true
+  tocopen: false
+  
+  # 搜索功能
+  Search: true
+  FuseOpts:
+    isCaseSensitive: false
+    shouldSort: true
+    location: 0
+    distance: 1000
+    threshold: 0.4
+    minMatchCharLength: 0
+    keys: ["title", "permalink", "summary", "content"]
+  
+  # 封面图片配置
+  cover:
+    hidden: true
+    hiddenInList: true
+    hiddenInSingle: true
+  
+  # 图片配置
+  images: []
+  
+  # 编辑链接（可选）
+  editPost:
+    URL: ""
+    Text: ""
+    appendFilePath: false
+  
+  # 评论系统配置
+  comments: true
+  commentSystem: "giscus"
+  
+  # 暗黑模式
+  defaultTheme: auto
+  
+  # 字体大小
+  fontSize: "M"
+  
+  # 字体
+  fontFamily: "Fira Code,Monaco,Consolas,Ubuntu Mono,monospace"
+  
+  # 代码高亮
+  codeBlocks:
+    highlight: true
+    highlightStyle: "github"
+    highlightLanguages: []
+  
+  # 归档页面
+  ShowArchiveLinks: true
+  
+  # 标签页
+  ShowTags: true
+  
+  # 分类页
+  ShowCategories: true
+
+# 菜单配置
+menu:
+  main:
+    - identifier: home
+      name: 首页
+      url: /
+      weight: 10
+    - identifier: archives
+      name: 归档
+      url: /archives/
+      weight: 20
+    - identifier: categories
+      name: 分类
+      url: /categories/
+      weight: 30
+    - identifier: tags
+      name: 标签
+      url: /tags/
+      weight: 40
+    - identifier: search
+      name: 搜索
+      url: /search/
+      weight: 50
+
+# 语言配置
+languages:
+  zh:
+    languageName: "中文"
+    title: "Song5216 的个人博客"
+    weight: 1
+    params:
+      title: "Song5216 的个人博客"
+      description: "个人博客网站"
