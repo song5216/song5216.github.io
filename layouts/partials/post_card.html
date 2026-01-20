@@ -1,0 +1,77 @@
+{{- $page := . }}
+<article class="post-card">
+  {{- $isHidden := (.Param "cover.hiddenInList") | default (.Param "cover.hidden") | default false }}
+  {{- if not $isHidden }}
+    {{- $cover := .Param "cover.image" | default .Params.image }}
+    {{- if $cover }}
+      {{- $img := resources.Get $cover }}
+      {{- if $img }}
+        <img src="{{ $img.RelPermalink }}" alt="{{ .Title }}" class="post-card-image">
+      {{- else }}
+        <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));"></div>
+      {{- end }}
+    {{- else }}
+      <div class="post-card-image" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));"></div>
+    {{- end }}
+  {{- end }}
+  
+  <div class="post-card-content">
+    <header class="post-card-header">
+      <h3 class="post-card-title">
+        <a href="{{ .Permalink }}">{{ .Title }}</a>
+        {{- if .Draft }}
+        <span class="entry-hint" title="Draft" style="font-size: 0.875rem; color: var(--text-secondary); margin-left: 8px;">
+          [草稿]
+        </span>
+        {{- end }}
+      </h3>
+    </header>
+    
+    <div class="post-card-meta">
+      {{- if .Date }}
+      <time datetime="{{ .Date.Format "2006-01-02" }}">
+        {{ .Date.Format "2006-01-02" }}
+      </time>
+      {{- end }}
+      {{- if (site.Params.ShowReadingTime | default true) }}
+      <span>·</span>
+      <span>{{ .ReadingTime }} 分钟阅读</span>
+      {{- end }}
+      {{- if .WordCount }}
+      <span>·</span>
+      <span>{{ .WordCount }} 字</span>
+      {{- end }}
+    </div>
+    
+    {{- if (ne (.Param "hideSummary") true) }}
+    <div class="post-card-summary">
+      {{ .Summary | plainify | htmlUnescape | truncate 150 }}{{ if .Truncated }}...{{ end }}
+    </div>
+    {{- end }}
+    
+    <footer class="post-card-footer">
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+        {{- $tags := .GetTerms "tags" }}
+        {{- if $tags }}
+          {{- range first 3 $tags }}
+          <a href="{{ .Permalink }}" class="tag-badge">{{ .LinkTitle }}</a>
+          {{- end }}
+          {{- if gt (len $tags) 3 }}
+          <span style="font-size: 0.75rem; color: var(--text-secondary);">+{{ sub (len $tags) 3 }}</span>
+          {{- end }}
+        {{- end }}
+        
+        {{- $categories := .GetTerms "categories" }}
+        {{- if $categories }}
+          {{- range first 1 $categories }}
+          <a href="{{ .Permalink }}" class="category-badge">{{ .LinkTitle }}</a>
+          {{- end }}
+        {{- end }}
+      </div>
+      
+      <a href="{{ .Permalink }}" class="post-card-read-more">
+        阅读更多 →
+      </a>
+    </footer>
+  </div>
+</article>

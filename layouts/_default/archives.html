@@ -1,0 +1,186 @@
+{{- define "main" }}
+
+<header class="page-header">
+  <h1>{{ .Title }}</h1>
+  {{- if .Description }}
+  <div class="post-description">
+    {{ .Description | markdownify }}
+  </div>
+  {{- end }}
+</header>
+
+{{- $pages := where site.RegularPages "Type" "in" site.Params.mainSections }}
+{{- $pages = where $pages "Params.hiddenInArchive" "!=" "true" }}
+
+{{- if $pages }}
+{{- $pagesByYear := $pages.GroupByDate "2006" }}
+
+<div class="archive-timeline">
+  {{- range $pagesByYear }}
+  <div class="archive-year-group">
+    <h2 class="archive-year" id="{{ .Key }}">
+      <a href="#{{ .Key }}" class="archive-year-link">
+        {{ .Key }} 年
+        <span class="archive-year-count">({{ len .Pages }})</span>
+      </a>
+    </h2>
+    
+    {{- $pagesByMonth := .Pages.GroupByDate "2006-01" }}
+    {{- range $pagesByMonth }}
+    {{- $monthKey := .Key }}
+    {{- $monthNum := index (split $monthKey "-") 1 }}
+    {{- $monthMap := dict "01" "1 月" "02" "2 月" "03" "3 月" "04" "4 月" "05" "5 月" "06" "6 月" "07" "7 月" "08" "8 月" "09" "9 月" "10" "10 月" "11" "11 月" "12" "12 月" }}
+    {{- $monthName := index $monthMap $monthNum | default (printf "%s 月" (strings.TrimPrefix "0" $monthNum)) }}
+    <div class="archive-month-group">
+      <h3 class="archive-month">{{ $monthName }}</h3>
+      <ul class="archive-posts-list">
+        {{- range .Pages }}
+        <li class="archive-post-item">
+          <time class="archive-post-date" datetime="{{ .Date.Format "2006-01-02" }}">
+            {{ .Date.Format "01-02" }}
+          </time>
+          <a href="{{ .Permalink }}" class="archive-post-link">
+            {{ .Title }}
+            {{- if .Draft }}
+            <span class="entry-hint" title="Draft" style="font-size: 0.75rem; color: var(--text-secondary); margin-left: 0.5rem;">
+              [草稿]
+            </span>
+            {{- end }}
+          </a>
+          {{- if (site.Params.ShowReadingTime | default true) }}
+          <span class="archive-post-reading-time" style="font-size: 0.75rem; color: var(--text-secondary); margin-left: 0.5rem;">
+            {{ .ReadingTime }} 分钟
+          </span>
+          {{- end }}
+        </li>
+        {{- end }}
+      </ul>
+    </div>
+    {{- end }}
+  </div>
+  {{- end }}
+</div>
+
+{{- /* 统计信息 */ -}}
+<div class="archive-stats" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+  <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">统计信息</h3>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+    <div style="padding: 1rem; background: var(--card-bg); border-radius: 8px; text-align: center;">
+      <div style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">{{ len $pages }}</div>
+      <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">总文章数</div>
+    </div>
+    <div style="padding: 1rem; background: var(--card-bg); border-radius: 8px; text-align: center;">
+      <div style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">{{ len $pagesByYear }}</div>
+      <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">年份数</div>
+    </div>
+  </div>
+</div>
+
+{{- else }}
+<p>暂无文章</p>
+{{- end }}
+
+<style>
+.archive-timeline {
+  margin-top: 2rem;
+}
+
+.archive-year-group {
+  margin-bottom: 3rem;
+}
+
+.archive-year {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.archive-year-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.archive-year-count {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-left: 0.5rem;
+}
+
+.archive-month-group {
+  margin-bottom: 1.5rem;
+  margin-left: 1rem;
+}
+
+.archive-month {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.archive-posts-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  margin-left: 1rem;
+}
+
+.archive-post-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.archive-post-item:last-child {
+  border-bottom: none;
+}
+
+.archive-post-date {
+  min-width: 60px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-family: var(--font-code);
+}
+
+.archive-post-link {
+  flex: 1;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color 0.2s;
+  margin-left: 1rem;
+}
+
+.archive-post-link:hover {
+  color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .archive-month-group {
+    margin-left: 0;
+  }
+  
+  .archive-posts-list {
+    margin-left: 0;
+  }
+  
+  .archive-post-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .archive-post-date {
+    margin-bottom: 0.25rem;
+  }
+  
+  .archive-post-link {
+    margin-left: 0;
+  }
+}
+</style>
+
+{{- end }}

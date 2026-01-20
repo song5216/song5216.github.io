@@ -1,0 +1,254 @@
+{{- define "main" }}
+
+<header class="page-header">
+  <h1>{{ .Title }}</h1>
+  {{- if .Description }}
+  <div class="post-description">
+    {{ .Description | markdownify }}
+  </div>
+  {{- end }}
+</header>
+
+{{- if .Content }}
+<div class="post-content">
+  {{- .Content }}
+</div>
+{{- end }}
+
+{{- $type := .Type }}
+{{- $term := .Data.Term }}
+
+{{- if eq $type "categories" }}
+  {{- /* 分类页面 - 卡片式展示 */ -}}
+  <div class="terms-grid">
+    {{- range .Data.Terms.ByCount }}
+    <article class="term-card category-card">
+      <div class="term-card-header">
+        <h2 class="term-card-title">
+          <a href="{{ .Page.Permalink }}">{{ .Page.Title }}</a>
+        </h2>
+        <span class="term-card-count">{{ .Count }} 篇文章</span>
+      </div>
+      {{- if .Page.Description }}
+      <div class="term-card-description">
+        {{ .Page.Description | markdownify }}
+      </div>
+      {{- end }}
+      {{- if .Page.Pages }}
+      <div class="term-card-posts">
+        <h4 style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary);">最新文章</h4>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+          {{- range first 3 .Page.Pages }}
+          <li style="padding: 0.25rem 0;">
+            <a href="{{ .Permalink }}" style="font-size: 0.875rem; color: var(--text-primary); text-decoration: none; transition: color 0.2s;">
+              {{ .Title }}
+            </a>
+          </li>
+          {{- end }}
+        </ul>
+      </div>
+      {{- end }}
+      <div class="term-card-footer">
+        <a href="{{ .Page.Permalink }}" class="term-card-link">查看全部 →</a>
+      </div>
+    </article>
+    {{- end }}
+  </div>
+
+{{- else if eq $type "tags" }}
+  {{- /* 标签页面 - 标签云 */ -}}
+  <div class="tags-cloud">
+    {{- $maxCount := 0 }}
+    {{- $minCount := 999999 }}
+    {{- range .Data.Terms }}
+      {{- if gt (len .Pages) $maxCount }}{{ $maxCount = len .Pages }}{{ end }}
+      {{- if lt (len .Pages) $minCount }}{{ $minCount = len .Pages }}{{ end }}
+    {{- end }}
+    {{- $diff := sub $maxCount $minCount }}
+    {{- if eq $diff 0 }}{{ $diff = 1 }}{{ end }}
+    
+    {{- range .Data.Terms.ByCount }}
+      {{- $count := .Count }}
+      {{- $size := div (sub $count $minCount) $diff }}
+      {{- $size = add (mul $size 0.8) 1.2 }}
+      {{- $opacity := div (sub $count $minCount) $diff }}
+      {{- $opacity = add (mul $opacity 0.5) 0.5 }}
+      <a href="{{ .Page.Permalink }}" class="tag-cloud-item" 
+         style="font-size: {{ $size }}rem; opacity: {{ $opacity }};"
+         title="{{ .Page.Title }} ({{ .Count }} 篇文章)">
+        {{ .Page.Title }} <span class="tag-count">({{ .Count }})</span>
+      </a>
+    {{- end }}
+  </div>
+  
+  {{- /* 标签列表（备用展示方式）*/ -}}
+  <div class="terms-list" style="margin-top: 3rem;">
+    <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--text-primary);">标签列表</h2>
+    <div class="terms-grid">
+      {{- range .Data.Terms.ByCount }}
+      <article class="term-card tag-card">
+        <div class="term-card-header">
+          <h3 class="term-card-title">
+            <a href="{{ .Page.Permalink }}">{{ .Page.Title }}</a>
+          </h3>
+          <span class="term-card-count">{{ .Count }} 篇</span>
+        </div>
+        <div class="term-card-footer">
+          <a href="{{ .Page.Permalink }}" class="term-card-link">查看文章 →</a>
+        </div>
+      </article>
+      {{- end }}
+    </div>
+  </div>
+
+{{- else }}
+  {{- /* 其他类型 */ -}}
+  <ul class="terms-list">
+    {{- range .Data.Terms.ByCount }}
+    <li>
+      <a href="{{ .Page.Permalink }}">{{ .Page.Title }}</a>
+      <span>({{ .Count }})</span>
+    </li>
+    {{- end }}
+  </ul>
+{{- end }}
+
+<style>
+.terms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.term-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.term-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+
+.term-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.term-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.term-card-title a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.term-card-title a:hover {
+  color: var(--primary-color);
+}
+
+.term-card-count {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  background: var(--primary-color);
+  color: #ffffff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.term-card-description {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  flex: 1;
+}
+
+.term-card-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.term-card-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: color 0.2s;
+}
+
+.term-card-link:hover {
+  color: var(--secondary-color);
+  text-decoration: underline;
+}
+
+/* 标签云样式 */
+.tags-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 2rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.tag-cloud-item {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  border-radius: 8px;
+  background: rgba(var(--primary-color-rgb, 30, 136, 229), 0.1);
+  border: 1px solid rgba(var(--primary-color-rgb, 30, 136, 229), 0.2);
+}
+
+.tag-cloud-item:hover {
+  background: var(--primary-color);
+  color: #ffffff;
+  transform: scale(1.05);
+  box-shadow: var(--shadow);
+}
+
+.tag-count {
+  font-size: 0.75em;
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .terms-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tags-cloud {
+    padding: 1rem;
+  }
+  
+  .tag-cloud-item {
+    padding: 0.375rem 0.75rem;
+  }
+}
+</style>
+
+{{- end }}

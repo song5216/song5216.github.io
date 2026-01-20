@@ -1,0 +1,67 @@
+{{- define "main" }}
+
+{{- /* Hero Section */ -}}
+{{- partial "hero.html" . }}
+
+{{- /* 内容分区 */ -}}
+{{- $pages := where site.RegularPages "Type" "in" site.Params.mainSections }}
+{{- $pages = where $pages "Params.hiddenInHomeList" "!=" "true" }}
+{{- $paginator := .Paginate $pages }}
+
+{{- if $paginator.Pages }}
+  {{- if site.Params.home.showLatestSection | default true }}
+  <div class="content-section">
+    <h2 class="section-title">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+      </svg>
+      最新文章
+    </h2>
+    <div class="posts-grid">
+      {{- range $paginator.Pages }}
+        {{- partial "post_card.html" . }}
+      {{- end }}
+    </div>
+  </div>
+  {{- end }}
+  
+  {{- if gt $paginator.TotalPages 1 }}
+  <footer class="page-footer">
+    <nav class="pagination">
+      {{- if $paginator.HasPrev }}
+      <a class="prev" href="{{ $paginator.Prev.URL | absURL }}">
+        «&nbsp;{{ i18n "prev_page" }}&nbsp;
+        {{- if (.Param "ShowPageNums") }}
+        {{- sub $paginator.PageNumber 1 }}/{{ $paginator.TotalPages }}
+        {{- end }}
+      </a>
+      {{- end }}
+      {{- if $paginator.HasNext }}
+      <a class="next" href="{{ $paginator.Next.URL | absURL }}">
+        {{- i18n "next_page" }}&nbsp;
+        {{- if (.Param "ShowPageNums") }}
+        {{- add 1 $paginator.PageNumber }}/{{ $paginator.TotalPages }}
+        {{- end }}&nbsp;»
+      </a>
+      {{- end }}
+    </nav>
+  </footer>
+  {{- end }}
+{{- else }}
+  {{- /* 如果没有文章，显示默认内容 */ -}}
+  {{- if site.Params.homeInfoParams }}
+  <article class="first-entry home-info">
+    <header class="entry-header">
+      <h1>{{ site.Params.homeInfoParams.Title | markdownify }}</h1>
+    </header>
+    <div class="entry-content">
+      {{ site.Params.homeInfoParams.Content | markdownify }}
+    </div>
+    <footer class="entry-footer">
+      {{ partial "social_icons.html" (dict "align" site.Params.homeInfoParams.AlignSocialIconsTo) }}
+    </footer>
+  </article>
+  {{- end }}
+{{- end }}
+
+{{- end }}
