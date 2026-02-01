@@ -1,0 +1,11 @@
+{{- with .Date }}
+<time datetime="{{ .Format "2006-01-02" }}">{{ .Format "2006-01-02" }}</time>
+{{- end }}
+{{- if (site.Params.ShowReadingTime | default true) }}
+<span style="margin-left: 0.5rem;">·</span>
+<span>{{ .ReadingTime }} 分钟阅读</span>
+{{- end }}
+{{- if and (site.Params.ShowWordCount | default true) .WordCount }}
+<span style="margin-left: 0.5rem;">·</span>
+<span>{{ .WordCount }} 字</span>
+{{- end }}

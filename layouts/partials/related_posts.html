@@ -1,5 +1,4 @@
-{{- $page := . }}
-{{- $related := $page.RegularPages.Related . | first 3 }}
+{{- $related := site.RegularPages.Related . | first 3 }}
 {{- if $related }}
 <div class="related-posts" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
   <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">相关文章</h3>

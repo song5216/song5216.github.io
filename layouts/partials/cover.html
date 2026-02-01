@@ -1,0 +1,11 @@
+{{- /* 封面图占位：配置隐藏时不输出 */ -}}
+{{- $isHidden := .isHidden | default false }}
+{{- if not $isHidden }}
+  {{- $cxt := .cxt }}
+  {{- $img := $cxt.Param "cover.image" | default $cxt.Params.image }}
+  {{- if $img }}
+  <div class="post-cover" style="margin-bottom: 1rem;">
+    <img src="{{ $img | relURL }}" alt="{{ $cxt.Title }}" style="max-width: 100%; height: auto; border-radius: 8px;">
+  </div>
+  {{- end }}
+{{- end }}

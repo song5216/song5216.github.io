@@ -1,0 +1,8 @@
+{{- /* 社交图标占位 */ -}}
+{{- with site.Params.socialIcons }}
+<div class="social-icons" style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+  {{- range . }}
+  <a href="{{ .url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ .name }}">{{ .name }}</a>
+  {{- end }}
+</div>
+{{- end }}

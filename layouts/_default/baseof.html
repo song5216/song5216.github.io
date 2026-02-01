@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="{{ or .Site.Language.Lang .Site.LanguageCode }}" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{{ block "title" . }}{{ with .Title }}{{ . }} | {{ end }}{{ .Site.Title }}{{ end }}</title>
+  <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ .Site.Params.description | default "个人博客网站" }}{{ end }}">
+  <link rel="canonical" href="{{ .Permalink }}">
+  {{- partial "extend_head.html" . -}}
+  <style>
+    /* 基础重置，确保各浏览器一致 */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--text-primary, #212121);
+      background: var(--bg-color, #ffffff);
+    }
+    a { color: var(--primary-color, #1e88e5); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    main { max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem 3rem; }
+    .site-nav {
+      background: var(--card-bg, #f5f5f5);
+      border-bottom: 1px solid var(--border-color, #e0e0e0);
+      padding: 0.75rem 1.5rem;
+      margin-bottom: 0;
+    }
+    .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+    .nav-inner a { color: var(--text-primary, #212121); font-weight: 500; }
+    .nav-inner a:hover { color: var(--primary-color, #1e88e5); }
+    .site-footer { text-align: center; padding: 2rem 1rem; font-size: 0.875rem; color: var(--text-secondary, #757575); border-top: 1px solid var(--border-color, #e0e0e0); }
+  </style>
+</head>
+<body>
+  <header class="site-nav" role="banner">
+    <nav class="nav-inner" aria-label="主导航">
+      <a href="{{ "" | absLangURL }}">{{ .Site.Title }}</a>
+      {{- range .Site.Menus.main }}
+      <a href="{{ .URL | absLangURL }}">{{ .Name }}</a>
+      {{- end }}
+    </nav>
+  </header>
+  <main id="main" role="main">
+    {{ block "main" . }}{{ end }}
+  </main>
+  <footer class="site-footer">
+    <span>&copy; {{ now.Year }} {{ .Site.Params.author | default .Site.Title }}</span>
+  </footer>
+</body>
+</html>
