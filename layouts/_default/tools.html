@@ -1,0 +1,27 @@
+{{- define "main" }}
+<article class="post-single tools-page">
+    <header class="post-header">
+        <h1 class="post-title">{{ .Title }}</h1>
+        {{- with .Params.summary }}
+        <div class="post-description">{{ . }}</div>
+        {{- end }}
+    </header>
+
+    <div class="post-content">
+        {{ .Content }}
+
+        {{- $tools := .Params.tools | default (slice) }}
+        {{- if gt (len $tools) 0 }}
+        <div class="tools-grid">
+            {{- range $tool := $tools }}
+            {{- $name := index $tool "name" }}
+            {{- $url := index $tool "url" }}
+            <a class="tools-card" href="{{ $url }}" target="{{ if hasPrefix $url "http" }}_blank{{ else }}_self{{ end }}" rel="noopener">
+                <span class="tools-card-title">{{ $name }}</span>
+            </a>
+            {{- end }}
+        </div>
+        {{- end }}
+    </div>
+</article>
+{{- end }}

@@ -600,6 +600,59 @@
   }
 }
 
+/* =====================
+   Tools Page
+   ===================== */
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.tools-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 88px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #4a4a4a;
+  color: #ffffff;
+  text-decoration: none;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.tools-card:hover {
+  transform: translateY(-2px);
+  background: #3f3f3f;
+}
+
+.tools-card-title {
+  font-weight: 600;
+  text-align: center;
+  word-break: break-word;
+}
+
+@media (max-width: 1024px) {
+  .tools-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .tools-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .tools-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
 /* 工具类 */
 .text-center {
   text-align: center;

@@ -159,6 +159,10 @@ menu:
       name: 关于
       url: /about/
       weight: 60
+    - identifier: tools
+      name: 工具
+      url: /tools/
+      weight: 70
 
 # 语言配置
 languages:
