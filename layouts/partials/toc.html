@@ -1,1 +1,70 @@
-{{- /* 目录占位：可后续扩展 */ -}}
+{{- $headers := findRE "<h[1-6].*?>(.|\n])+?</h[1-6]>" .Content -}}
+{{- $hasHeaders := ge (len $headers) 1 -}}
+{{- if $hasHeaders -}}
+
+{{- $tocOpen := (.Param "TocOpen") | default (.Param "tocopen") | default false -}}
+{{- $useHugoToc := (.Param "UseHugoToc") | default (.Param "useHugoToc") | default site.Params.UseHugoToc | default false -}}
+
+<div class="toc toc-left" id="toc-left">
+  <div class="toc-inner">
+    <button class="toc-toggle" type="button" aria-controls="toc-left-content" aria-expanded="true">目录</button>
+    <div class="toc-title" id="toc-left-content-title">{{- i18n "toc" | default "目录" -}}</div>
+    <div class="toc-content" id="toc-left-content">
+
+    {{- if $useHugoToc -}}
+      {{- .TableOfContents -}}
+    {{- else -}}
+      {{- /* fallback: use PaperMod's algorithm by delegating to theme partial if needed */ -}}
+      {{- .TableOfContents -}}
+    {{- end -}}
+
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc-left');
+    if (!toc) {
+      return;
+    }
+
+    var content = document.getElementById('toc-left-content');
+    var toggle = toc.querySelector('.toc-toggle');
+    if (!content || !toggle) {
+      return;
+    }
+
+    var storageKey = 'toc-left-collapsed';
+    var collapsed = false;
+    try {
+      collapsed = localStorage.getItem(storageKey) === '1';
+    } catch (e) {
+      collapsed = false;
+    }
+
+    function applyState(isCollapsed) {
+      if (isCollapsed) {
+        toc.classList.add('is-collapsed');
+        toggle.setAttribute('aria-expanded', 'false');
+      } else {
+        toc.classList.remove('is-collapsed');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    applyState(collapsed);
+
+    toggle.addEventListener('click', function () {
+      var nextCollapsed = !toc.classList.contains('is-collapsed');
+      applyState(nextCollapsed);
+      try {
+        localStorage.setItem(storageKey, nextCollapsed ? '1' : '0');
+      } catch (e) {
+        // ignore
+      }
+    });
+  })();
+</script>
+
+{{- end -}}
