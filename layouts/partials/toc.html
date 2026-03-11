@@ -1,70 +1,97 @@
-{{- $headers := findRE "<h[1-6].*?>(.|\n])+?</h[1-6]>" .Content -}}
+{{- $headers := findRE "<h[1-6].*?>(.|\\n])+?</h[1-6]>" .Content -}}
 {{- $hasHeaders := ge (len $headers) 1 -}}
 {{- if $hasHeaders -}}
 
-{{- $tocOpen := (.Param "TocOpen") | default (.Param "tocopen") | default false -}}
-{{- $useHugoToc := (.Param "UseHugoToc") | default (.Param "useHugoToc") | default site.Params.UseHugoToc | default false -}}
-
-<div class="toc toc-left" id="toc-left">
-  <div class="toc-inner">
-    <button class="toc-toggle" type="button" aria-controls="toc-left-content" aria-expanded="true">目录</button>
-    <div class="toc-title" id="toc-left-content-title">{{- i18n "toc" | default "目录" -}}</div>
-    <div class="toc-content" id="toc-left-content">
-
-    {{- if $useHugoToc -}}
-      {{- .TableOfContents -}}
-    {{- else -}}
-      {{- /* fallback: use PaperMod's algorithm by delegating to theme partial if needed */ -}}
-      {{- .TableOfContents -}}
-    {{- end -}}
-
-    </div>
+<aside class="doc-sidebar" id="doc-sidebar" role="navigation" aria-label="文章目录">
+  <div class="sidebar-header">
+    <span class="sidebar-title">
+      <svg class="sidebar-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="15" y2="12"/>
+        <line x1="3" y1="18" x2="18" y2="18"/>
+      </svg>
+      目录
+    </span>
+    <button class="sidebar-toggle" id="sidebar-toggle" title="收起目录" aria-label="收起目录">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
   </div>
-</div>
+  <nav class="sidebar-nav" id="sidebar-nav">
+    {{- .TableOfContents -}}
+  </nav>
+  <div class="sidebar-fade-bottom"></div>
+</aside>
 
 <script>
-  (function () {
-    var toc = document.getElementById('toc-left');
-    if (!toc) {
-      return;
-    }
+(function () {
+  var sidebar = document.getElementById('doc-sidebar');
+  var toggle  = document.getElementById('sidebar-toggle');
+  var nav     = document.getElementById('sidebar-nav');
+  if (!sidebar || !toggle || !nav) return;
 
-    var content = document.getElementById('toc-left-content');
-    var toggle = toc.querySelector('.toc-toggle');
-    if (!content || !toggle) {
-      return;
-    }
+  var KEY = 'doc-sidebar-collapsed';
+  var collapsed = false;
+  try { collapsed = localStorage.getItem(KEY) === '1'; } catch(e) {}
 
-    var storageKey = 'toc-left-collapsed';
-    var collapsed = false;
-    try {
-      collapsed = localStorage.getItem(storageKey) === '1';
-    } catch (e) {
-      collapsed = false;
-    }
+  function applyState(c) {
+    sidebar.classList.toggle('is-collapsed', c);
+    toggle.title = c ? '展开目录' : '收起目录';
+    toggle.setAttribute('aria-label', c ? '展开目录' : '收起目录');
+    var poly = toggle.querySelector('polyline');
+    if (poly) poly.setAttribute('points', c ? '9 18 15 12 9 6' : '15 18 9 12 15 6');
+  }
 
-    function applyState(isCollapsed) {
-      if (isCollapsed) {
-        toc.classList.add('is-collapsed');
-        toggle.setAttribute('aria-expanded', 'false');
-      } else {
-        toc.classList.remove('is-collapsed');
-        toggle.setAttribute('aria-expanded', 'true');
-      }
-    }
+  applyState(collapsed);
 
+  toggle.addEventListener('click', function () {
+    collapsed = !collapsed;
     applyState(collapsed);
+    try { localStorage.setItem(KEY, collapsed ? '1' : '0'); } catch(e) {}
+  });
 
-    toggle.addEventListener('click', function () {
-      var nextCollapsed = !toc.classList.contains('is-collapsed');
-      applyState(nextCollapsed);
-      try {
-        localStorage.setItem(storageKey, nextCollapsed ? '1' : '0');
-      } catch (e) {
-        // ignore
+  var links    = Array.prototype.slice.call(nav.querySelectorAll('a[href^="#"]'));
+  var prefixRe = /^\s*(?:[\d]+[\.、\)]\s*)+/;
+  links.forEach(function(link) {
+    link.textContent = link.textContent.replace(prefixRe, '');
+  });
+  var anchors  = [];
+  links.forEach(function(link) {
+    var id = link.getAttribute('href').slice(1);
+    var el = document.getElementById(id);
+    if (el) anchors.push({ el: el, link: link });
+  });
+
+  if (!anchors.length) return;
+
+  var current = null;
+
+  function update() {
+    var scrollY = window.pageYOffset || window.scrollY;
+    var found = null;
+    for (var i = 0; i < anchors.length; i++) {
+      var top = anchors[i].el.getBoundingClientRect().top + scrollY;
+      if (top <= scrollY + 96) found = anchors[i].link;
+    }
+    if (!found) found = anchors[0].link;
+
+    if (found !== current) {
+      if (current) current.classList.remove('active');
+      found.classList.add('active');
+      current = found;
+
+      var lTop = found.offsetTop;
+      var nH   = nav.clientHeight;
+      if (lTop < nav.scrollTop || lTop > nav.scrollTop + nH - 48) {
+        nav.scrollTop = lTop - nH / 2 + 20;
       }
-    });
-  })();
+    }
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
 </script>
 
 {{- end -}}

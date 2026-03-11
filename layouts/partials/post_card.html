@@ -18,7 +18,7 @@
   <div class="post-card-content">
     <header class="post-card-header">
       <h3 class="post-card-title">
-        <a href="{{ .Permalink }}">{{ .Title }}</a>
+        <a href="{{ .RelPermalink }}">{{ .Title }}</a>
         {{- if .Draft }}
         <span class="entry-hint" title="Draft" style="font-size: 0.875rem; color: var(--text-secondary); margin-left: 8px;">
           [草稿]
@@ -54,7 +54,7 @@
         {{- $tags := .GetTerms "tags" }}
         {{- if $tags }}
           {{- range first 3 $tags }}
-          <a href="{{ .Permalink }}" class="tag-badge">{{ .LinkTitle }}</a>
+          <a href="{{ .RelPermalink }}" class="tag-badge">{{ .LinkTitle }}</a>
           {{- end }}
           {{- if gt (len $tags) 3 }}
           <span style="font-size: 0.75rem; color: var(--text-secondary);">+{{ sub (len $tags) 3 }}</span>
@@ -64,7 +64,7 @@
         {{- $categories := .GetTerms "categories" }}
         {{- if $categories }}
           {{- range first 1 $categories }}
-          <a href="{{ .Permalink }}" class="category-badge">{{ .LinkTitle }}</a>
+          <a href="{{ .RelPermalink }}" class="category-badge">{{ .LinkTitle }}</a>
           {{- end }}
         {{- end }}
       </div>

@@ -1,82 +1,190 @@
 {{- define "main" }}
 
-{{- if not .IsHome | and .Title }}
-<header class="page-header">
-  {{- partial "breadcrumbs.html" . }}
-  <h1>
-    {{ .Title }}
-    {{- if and (or (eq .Kind `term`) (eq .Kind `section`)) (.Param "ShowRssButtonInSectionTermList") }}
-    {{- with .OutputFormats.Get "rss" }}
-    <a href="{{ .RelPermalink }}" title="RSS" aria-label="RSS">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round" height="23">
-        <path d="M4 11a9 9 0 0 1 9 9" />
-        <path d="M4 4a16 16 0 0 1 16 16" />
-        <circle cx="5" cy="19" r="1" />
-      </svg>
-    </a>
-    {{- end }}
-    {{- end }}
-  </h1>
-  {{- if .Description }}
-  <div class="post-description">
-    {{ .Description | markdownify }}
-  </div>
-  {{- end }}
-</header>
+{{- $pages := union .RegularPages .Sections }}
+{{- if .IsHome }}
+{{- $pages = where site.RegularPages "Type" "in" site.Params.mainSections }}
+{{- $pages = where $pages "Params.hiddenInHomeList" "!=" "true" }}
 {{- end }}
 
 {{- if .Content }}
-<div class="post-content">
+<div class="post-content" style="margin-bottom:2rem;">
   {{- if not (.Param "disableAnchoredHeadings") }}
   {{- partial "anchored_headings.html" .Content -}}
   {{- else }}{{ .Content }}{{ end }}
 </div>
 {{- end }}
 
-{{- $pages := union .RegularPages .Sections }}
+{{- if $pages }}
+<div class="posts-layout">
 
-{{- if .IsHome }}
-{{- $pages = where site.RegularPages "Type" "in" site.Params.mainSections }}
-{{- $pages = where $pages "Params.hiddenInHomeList" "!=" "true"  }}
-{{- end }}
+  {{/* ── 左侧导航栏 ── */}}
+  <aside class="posts-sidebar" id="posts-sidebar">
+    <div class="posts-sidebar-inner">
+      <div class="posts-sidebar-header">
+        <span class="posts-sidebar-label">文章目录</span>
+        <button class="posts-sidebar-toggle" id="posts-sidebar-toggle" title="收起" aria-label="收起侧边栏">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
 
-{{- $paginator := .Paginate $pages }}
+      {{/* 按年月分组 */}}
+      {{- $byYear := dict }}
+      {{- range $pages }}
+        {{- $y := .Date.Format "2006" }}
+        {{- $m := .Date.Format "2006-01" }}
+        {{- $existing := index $byYear $y | default (slice) }}
+        {{- $byYear = merge $byYear (dict $y ($existing | append .)) }}
+      {{- end }}
 
-{{- if $paginator.Pages }}
-  {{- /* 使用网格布局展示文章卡片 */ -}}
-  <div class="posts-grid">
-    {{- range $paginator.Pages }}
-      {{- partial "post_card.html" . }}
-    {{- end }}
-  </div>
-  
-  {{- if gt $paginator.TotalPages 1 }}
-  <footer class="page-footer">
-    <nav class="pagination">
-      {{- if $paginator.HasPrev }}
-      <a class="prev" href="{{ $paginator.Prev.URL | absURL }}">
-        «&nbsp;{{ i18n "prev_page" }}&nbsp;
-        {{- if (.Param "ShowPageNums") }}
-        {{- sub $paginator.PageNumber 1 }}/{{ $paginator.TotalPages }}
+      <nav class="posts-nav" id="posts-nav">
+        {{- range $y, $ps := $byYear }}
+        <div class="posts-nav-year">
+          <button class="posts-nav-year-btn" data-year="{{ $y }}">
+            <span>{{ $y }}</span>
+            <svg class="posts-nav-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <ul class="posts-nav-list" data-year-list="{{ $y }}">
+            {{- range $ps }}
+            <li>
+              <a class="posts-nav-item" href="#post-{{ .File.UniqueID }}" data-id="{{ .File.UniqueID }}">
+                <span class="posts-nav-date">{{ .Date.Format "01-02" }}</span>
+                <span class="posts-nav-title">{{ .Title }}</span>
+              </a>
+            </li>
+            {{- end }}
+          </ul>
+        </div>
         {{- end }}
-      </a>
+      </nav>
+    </div>
+  </aside>
+
+  {{/* ── 右侧文章列表 ── */}}
+  <section class="posts-feed" id="posts-feed">
+    {{- range $pages }}
+    <article class="pf-card" id="post-{{ .File.UniqueID }}">
+      <div class="pf-card-main">
+        <div class="pf-card-meta">
+          <time class="pf-date" datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006 / 01 / 02" }}</time>
+          {{- if (site.Params.ShowReadingTime | default true) }}
+          <span class="pf-dot"></span>
+          <span class="pf-reading">{{ .ReadingTime }} 分钟</span>
+          {{- end }}
+        </div>
+        <h2 class="pf-title"><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+        {{- if (ne (.Param "hideSummary") true) }}
+        <p class="pf-summary">{{ .Summary | plainify | htmlUnescape | truncate 120 }}</p>
+        {{- end }}
+        <div class="pf-footer">
+          {{- $tags := .GetTerms "tags" }}
+          {{- range first 4 $tags }}
+          <a href="{{ .RelPermalink }}" class="pf-tag">{{ .LinkTitle }}</a>
+          {{- end }}
+          <a href="{{ .RelPermalink }}" class="pf-read">阅读全文 →</a>
+        </div>
+      </div>
+    </article>
+    {{- end }}
+
+    {{/* 分页 */}}
+    {{- $paginator := .Paginate $pages }}
+    {{- if gt $paginator.TotalPages 1 }}
+    <footer class="pf-pagination">
+      {{- if $paginator.HasPrev }}
+      <a class="pf-page-btn" href="{{ $paginator.Prev.URL | relURL }}">← 上一页</a>
       {{- end }}
+      <span class="pf-page-info">{{ $paginator.PageNumber }} / {{ $paginator.TotalPages }}</span>
       {{- if $paginator.HasNext }}
-      <a class="next" href="{{ $paginator.Next.URL | absURL }}">
-        {{- i18n "next_page" }}&nbsp;
-        {{- if (.Param "ShowPageNums") }}
-        {{- add 1 $paginator.PageNumber }}/{{ $paginator.TotalPages }}
-        {{- end }}&nbsp;»
-      </a>
+      <a class="pf-page-btn" href="{{ $paginator.Next.URL | absURL }}">下一页 →</a>
       {{- end }}
-    </nav>
-  </footer>
-  {{- end }}
+    </footer>
+    {{- end }}
+  </section>
+
+</div>
+
+<script>
+(function () {
+  var sidebar   = document.getElementById('posts-sidebar');
+  var toggle    = document.getElementById('posts-sidebar-toggle');
+  var nav       = document.getElementById('posts-nav');
+  var feed      = document.getElementById('posts-feed');
+  if (!sidebar || !toggle) return;
+
+  var KEY = 'posts-sidebar-collapsed';
+  var collapsed = false;
+  try { collapsed = localStorage.getItem(KEY) === '1'; } catch(e) {}
+
+  function applyCollapse(c) {
+    sidebar.classList.toggle('is-collapsed', c);
+    toggle.title = c ? '展开' : '收起';
+    var poly = toggle.querySelector('polyline');
+    if (poly) poly.setAttribute('points', c ? '9 18 15 12 9 6' : '15 18 9 12 15 6');
+  }
+  applyCollapse(collapsed);
+
+  toggle.addEventListener('click', function () {
+    collapsed = !collapsed;
+    applyCollapse(collapsed);
+    try { localStorage.setItem(KEY, collapsed ? '1' : '0'); } catch(e) {}
+  });
+
+  document.querySelectorAll('.posts-nav-year-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var y = btn.getAttribute('data-year');
+      var list = document.querySelector('[data-year-list="' + y + '"]');
+      if (!list) return;
+      var open = list.classList.toggle('is-open');
+      btn.classList.toggle('is-open', open);
+    });
+    btn.classList.add('is-open');
+    var list = document.querySelector('[data-year-list="' + btn.getAttribute('data-year') + '"]');
+    if (list) list.classList.add('is-open');
+  });
+
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.pf-card[id]'));
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.posts-nav-item[data-id]'));
+
+  function onScroll() {
+    var scrollY = window.pageYOffset || window.scrollY;
+    var active = null;
+    cards.forEach(function (card) {
+      var top = card.getBoundingClientRect().top + scrollY;
+      if (top <= scrollY + 160) active = card.id;
+    });
+    navLinks.forEach(function (link) {
+      var isActive = active && link.getAttribute('href') === '#' + active;
+      link.classList.toggle('is-active', isActive);
+    });
+    var activeLink = document.querySelector('.posts-nav-item.is-active');
+    if (activeLink && nav) {
+      var lTop = activeLink.offsetTop;
+      var nH = nav.clientHeight;
+      if (lTop < nav.scrollTop || lTop > nav.scrollTop + nH - 40) {
+        nav.scrollTop = lTop - nH / 2 + 20;
+      }
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  navLinks.forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      var id = link.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if (el) {
+        var top = el.getBoundingClientRect().top + window.pageYOffset - 72;
+        window.scrollTo({ top: top, behavior: 'smooth' });
+      }
+    });
+  });
+})();
+</script>
+
 {{- else }}
-  <p style="text-align: center; color: var(--text-secondary); padding: 2rem;">
-    暂无内容
-  </p>
+<p class="posts-empty">暂无文章</p>
 {{- end }}
 
-{{- end }}{{- /* end main */ -}}
+{{- end }}

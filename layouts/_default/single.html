@@ -4,11 +4,13 @@
 
   {{- $showToc := (.Param "ShowToc") | default (.Param "showtoc") | default site.Params.showtoc | default false -}}
 
+  <div class="{{ if $showToc }}doc-layout{{ end }}">
+
   {{- if $showToc }}
   {{- partial "toc.html" . }}
   {{- end }}
 
-  <div class="post-main">
+  <div class="doc-content">
     <header class="post-header">
       {{ partial "breadcrumbs.html" . }}
       <h1 class="post-title entry-hint-parent">
@@ -47,6 +49,8 @@
       {{- else }}{{ .Content }}{{ end }}
     </div>
     {{- end }}
+
+  </div>
 
   </div>
 
